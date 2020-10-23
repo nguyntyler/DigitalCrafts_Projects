@@ -168,12 +168,14 @@ class Cell(Scene):  # DONE
     def enter(self):
         print("You awaken in a concrete cell. Moonlight shines through the window.\nThe only entrance seems to be a metal door.")
 
-        choice = input("> ")
+        choice = input("> ").lower()
 
         while True:
             if Scene.choicecheck(self, Scene.first_room,
                                  "look_options", "room_options", choice):
-                print("You just see a small metal filer on the ground next to your cot.")
+                if not self.have_file:
+                    print(
+                        "You just see a small metal filer on the ground next to your cot.")
                 if not self.door_checked:
                     print("The metal door looks quite sturdy.")
                 elif self.door_checked:
@@ -184,6 +186,9 @@ class Cell(Scene):  # DONE
                     print("Moonlight shines through a now bar-less window.")
             # doorcheck
             elif Scene.choicecheck(self, Scene.first_room, "look_options", "door_options", choice):
+                print("The door is locked. Doesn't look like you can leave this way.")
+                self.door_checked = True
+            elif Scene.choicecheck(self, Scene.first_room, "window_remove_options", "door_options", choice):
                 print("The door is locked. Doesn't look like you can leave this way.")
                 self.door_checked = True
             # cotcheck
@@ -249,7 +254,7 @@ class Cell(Scene):  # DONE
                     return 'outside'
             else:
                 print("I'm not sure what you mean by this.")
-            choice = input("> ")
+            choice = input("> ").lower()
 
 
 class Outside(Scene):
@@ -262,7 +267,7 @@ class Outside(Scene):
         if not self.tent_checked:
             print("\n     ***COMBAT INTRODUCED***\n  ** Battle is now possible **\n   *Type [HEALTH] to check health.\n   *Type [EAT] to replenish health.\n   *Type [FOOD] to check food supply.*\n\nAs you make your way outside, you see a tent straight ahead. To your left is another extension of the prison.\nYou can make out a guard standing watch by the left entrance. \nWith no visible exit in sight, you're left with these two options.")
 
-            choice = input("> ")
+            choice = input("> ").lower()
 
             while True:
                 # print(Scene.NEXT)
@@ -286,13 +291,13 @@ class Outside(Scene):
                 else:
                     print(
                         "You can only go LEFT towards the prison or STRAIGHT towards the tent.")
-                choice = input("> ")
+                choice = input("> ").lower()
 
         elif self.tent_checked:
             print(
                 "Exiting the tent, only the entrance to another part of the prison to your right remains.")
 
-            choice = input("> ")
+            choice = input("> ").lower()
 
             while True:
                 if Scene.scene_char_check(self, Scene.char_interactions_words,
@@ -304,7 +309,7 @@ class Outside(Scene):
                     return 'battle'
                 else:
                     print("You can only go RIGHT towards the prison.")
-                choice = input("> ")
+                choice = input("> ").lower()
 
 
 class TentFirst(Scene):  # DONE
@@ -312,7 +317,7 @@ class TentFirst(Scene):  # DONE
     def enter(self):
         print("You make your way to the tent.\nNo one is inside. Luckily.\nKnick-knacks are scattered around.")
 
-        choice = input("> ")
+        choice = input("> ").lower()
         bread_taken = False
 
         while True:
@@ -373,7 +378,7 @@ class TentFirst(Scene):  # DONE
             else:
                 print("You can't do that right now!")
 
-            choice = input("> ")
+            choice = input("> ").lower()
 
 
 class PrisonCorridor(Scene):  # ADD NEW PATHS
@@ -385,7 +390,7 @@ class PrisonCorridor(Scene):  # ADD NEW PATHS
             player.prison_corridor = True
             print("You make your way past the guard into the prison corridor.\nAs you enter, you see a woman in ragged clothes subduing another guard.\n\n\"Oh hey. I see you're trying to break out as well.\" she says.\n\"I'm looking for a key to the main entrance. It's the only way out.\"\n\"Want to help?\"")
 
-            choice = input("\n\t[YES] [NO]\n> ")
+            choice = input("\n\t[YES] [NO]\n> ").lower()
             while True:
                 if Scene.scene_char_check(self, Scene.char_interactions_words,
                                           "word", choice):
@@ -427,7 +432,7 @@ class PrisonCorridor(Scene):  # ADD NEW PATHS
                 else:
                     print("Choose [YES] or [NO].")
 
-                choice = input("\t[YES] [NO]\n> ")
+                choice = input("\t[YES] [NO]\n> ").lower()
         elif player.prison_corridor:
             Scene.NEXT = 'prison puzzle'
             print(
@@ -447,7 +452,7 @@ class PrisonCorridor(Scene):  # ADD NEW PATHS
                     return 'prison puzzle'
                 else:
                     print("Choose [LEFT] or [RIGHT]")
-                choice = input("> ")
+                choice = input("> ").lower()
 
 
 class PrisonPuzzle(Scene):
@@ -511,26 +516,26 @@ class MainEntrance(Scene):
         if player.have_help:
             print("You somehow find your way to the main entrance.\nThe woman is standing by the exit door.\n\n\"Took you long enough.\" she says.\n\"Now unlock the door with the key.\"")
 
-            choice = input("> ")
+            choice = input("> ").lower()
 
             while True:
                 if Scene.choicecheck(self, Scene.first_room, "use", "door_options", choice):
                     return 'final scene'
                 else:
                     print("\n\n\"Just unlock the door. It's not that hard.\"\n\n")
-                choice = input("> ")
+                choice = input("> ").lower()
                 Scene.clear(self)
         elif not player.have_help:
             print("You somehow find your way to the main entrance. As you approach the door, you notice the woman from before show up.\n\n\"HEY! Is that the key?\nLet's blow this joint!\"\n\n")
 
-            choice = input("> ")
+            choice = input("> ").lower()
 
             while True:
                 if Scene.choicecheck(self, Scene.first_room, "use", "door_options", choice):
                     return 'final scene'
                 else:
                     print("\n\n\"Just unlock the door. It's not that hard.\"\n\n")
-                choice = input("> ")
+                choice = input("> ").lower()
                 Scene.clear(self)
 
 
