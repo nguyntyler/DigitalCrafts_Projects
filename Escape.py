@@ -1,16 +1,22 @@
 from random import randint
+from os import system, name
 
 
 class Mob:
     def __init__(self):
         self.health = 10
-        self.attack = 4
+        self.damage = 4
+        self.max_health = 10
 
     def get_hit(self, enemy):
-        self.health -= enemy.attack
+        self.health -= enemy.damage
+        if self.health < 0:
+            self.health = 0
 
-    def attack(self, enemy):
-        enemy.get_hit(self.attack)
+    def attack(self, enemy, damage=0):
+        enemy.health -= (self.damage - damage)
+        if enemy.health < 0:
+            enemy.health = 0
 
 
 class Character(Mob):
@@ -18,15 +24,32 @@ class Character(Mob):
         self.health = 15
         self.max_health = 15
         self.bread = 0
-        self.attack = 2
+        self.damage = 3
+        self.have_sword = False
+        self.have_shield = False
+        self.have_help = False
+        self.prison_corridor = False
+
+    def char_interaction(self, choice):
+        if "eat" in choice.lower():
+            if self.bread > 0:
+                self.bread -= 1
+                self.health = self.max_health
+                print(
+                    f"You are now at max health.\n   *Bread remaining: [{player.bread}]")
+            else:
+                print("   *You don't have any bread left!")
+        elif "health" in choice.lower():
+            print(f"   *Remaining health: [{player.health} | 15]")
+        elif "food" in choice.lower():
+            print(f"   *Bread remaining: [{player.bread}]")
 
 
 class Scene(object):
-    NEXT = "None"
-    ENEMY = "None"
+    NEXT = "none"
     first_room = {
-        "look_options": ["look", "inspect", "check", "lift"],
-        "room_options": ["room", "cell", "around"],
+        "look_options": ["look", "inspect", "check", "lift", "search"],
+        "room_options": ["room", "cell", "around", "tent"],
         "window_options": ["window", "bar"],
         "door_options": ["door", "lock"],
         "remove_options": ["break", "smash", "pull", "remove"],
@@ -37,7 +60,15 @@ class Scene(object):
         "bar": ["bar"],
         "pick": ["pick"],
         "door": ["door"],
-        "lock": ["lock"]
+        "lock": ["lock"],
+        "leave": ["out", "back", "leave"],
+        "sword": ["sword"],
+        "shield": ["shield"],
+        "bread": ["bread"],
+        "use": ["unlock", "open", "use"],
+    }
+    char_interactions_words = {
+        "word": ["health", "eat", "food"]
     }
     enemy_actions = [
         "The enemy slashes at you with his sword.",
@@ -58,7 +89,8 @@ class Scene(object):
         "The enemy lands an attack, striking your side.",
         "The enemy's attack lands, slicing your leg.",
         "The enemy manages to strike your leg.",
-        ""
+        "A swing of the sword from the enemy cuts your arm.",
+        "The enemy manages to strike your arm."
     ]
     player_hit = [
         "You land an attack on the enemy!",
@@ -68,6 +100,17 @@ class Scene(object):
         "Your attack misses...",
         "You miss..."
     ]
+    player_parry = [
+        "<PARRY> With a swift swing, you manage to strike back the enemy!",
+        "<PARRY> With quick reflexes, you parry the enemy and attack them back!",
+        "<PARRY> You manage to sneak an attack through to the enemy!",
+    ]
+
+    def clear(self):
+        if name == "nt":
+            _ = system('cls')
+        else:
+            _ = system('clear')
 
     def enter(self):
         print("This scene is not yet configured.")
@@ -84,6 +127,11 @@ class Scene(object):
                 check2 = True
         if check1 and check2 == True:
             return True
+
+    def scene_char_check(self, room, list, choice):
+        for i in room[list]:
+            if i in choice:
+                return True
 
 
 class Engine(object):
@@ -105,17 +153,17 @@ class Engine(object):
 class TitleScreen(Scene):
 
     def enter(self):
-        print("   *** Welcome to Escape! Try to get out of the prison. Input your actions as if you were the character. ***")
+        print("   *** Welcome to Escape! ***\n Try to get out of the prison. Input your actions as if you were the character.\n")
         return 'cell'
 
 
-class Cell(Scene):
+class Cell(Scene):  # DONE
     def __init__(self):
         self.door_checked = False
         self.have_file = False
         self.bar1_remove = False
         self.bar2_remove = False
-        self.bar3_remove = True  # CHANGE BACK
+        self.bar3_remove = False
 
     def enter(self):
         print("You awaken in a concrete cell. Moonlight shines through the window.\nThe only entrance seems to be a metal door.")
@@ -194,6 +242,10 @@ class Cell(Scene):
                         "The bars are in your way. Doing this is pointless until you can remove them somehow.")
                 elif self.bar3_remove:
                     print("You manage to escape.")
+
+                    input("[PRESS ANY KEY] ")
+                    Scene.clear(self)
+
                     return 'outside'
             else:
                 print("I'm not sure what you mean by this.")
@@ -201,29 +253,39 @@ class Cell(Scene):
 
 
 class Outside(Scene):
-    Scene.NEXT = "prison corridor"
-    Scene.ENEMY = "enemy1"
+    Scene.NEXT = 'prison corridor'
 
     def __init__(self):
         self.tent_checked = False
 
     def enter(self):
         if not self.tent_checked:
-            print("\n     ***COMBAT INTRODUCED***\n  ** Battle is now possible **\n   *It's killed or be killed*\n\nAs you make your way outside, you see a tent straight ahead. To your left is another extension of the prison.\nYou can make out a guard on standing watch by the left entrance. \nWith no visible exit in sight, you're left with these two options.")
+            print("\n     ***COMBAT INTRODUCED***\n  ** Battle is now possible **\n   *Type [HEALTH] to check health.\n   *Type [EAT] to replenish health.\n   *Type [FOOD] to check food supply.*\n\nAs you make your way outside, you see a tent straight ahead. To your left is another extension of the prison.\nYou can make out a guard standing watch by the left entrance. \nWith no visible exit in sight, you're left with these two options.")
 
             choice = input("> ")
 
             while True:
-                if ("straight" in choice) or ("tent" in choice):
+                # print(Scene.NEXT)
+                if Scene.scene_char_check(self, Scene.char_interactions_words, "word", choice):
+                    player.char_interaction(choice)
+                elif ("straight" in choice) or ("tent" in choice):
                     self.tent_checked = True
+
+                    input("[PRESS ANY KEY] ")
+                    Scene.clear(self)
+
                     return 'tent first'
                 elif ("left" in choice) or ("prison" in choice):
                     print(
-                        "You make your way towards the prison corridor.\nAs you approach, the guard standing post sees you and charges.")
-                    return 'battle'
+                        "You make your way towards the prison corridor.\n\nAs you approach, the guard standing post sees you and charges.\n\nWith no equipment other than a metal filer to protect you, you're left defenseless!\nThe guard attacks you freely while you do your best to scratch him with your file.\n\nYou did the best you could but your file was no match for his sword.\n\n   *** YOU DIED. ***\n\n")
+
+                    input("[PRESS ANY KEY] ")
+                    Scene.clear(self)
+
+                    return 'death'
                 else:
                     print(
-                        "You can only go LEFT towards the prison or RIGHT towards the tent.")
+                        "You can only go LEFT towards the prison or STRAIGHT towards the tent.")
                 choice = input("> ")
 
         elif self.tent_checked:
@@ -232,50 +294,326 @@ class Outside(Scene):
 
             choice = input("> ")
 
-            # while True:
+            while True:
+                if Scene.scene_char_check(self, Scene.char_interactions_words,
+                                          "word", choice):
+                    player.char_interaction(choice)
+                elif ("right" in choice) or ("prison" in choice):
+                    print(
+                        "You make your way towards the prison corridor.\nAs you approach, the guard standing post sees you and charges.")
+                    return 'battle'
+                else:
+                    print("You can only go RIGHT towards the prison.")
+                choice = input("> ")
 
-        # print(f"You have {player.health} health.")
-        # player.health -= 4
-        # print(f"You have {player.health} health left.")
-        # exit()
 
+class TentFirst(Scene):  # DONE
 
-class TentFirst(Outside):
     def enter(self):
-        print("yay")
-        exit()
+        print("You make your way to the tent.\nNo one is inside. Luckily.\nKnick-knacks are scattered around.")
+
+        choice = input("> ")
+        bread_taken = False
+
+        while True:
+            if Scene.scene_char_check(self, Scene.char_interactions_words,
+                                      "word", choice):
+                player.char_interaction(choice)
+            elif Scene.choicecheck(self, Scene.first_room,
+                                   "leave", "leave", choice):
+                if not player.have_shield:
+                    print("Maybe you should pick up that shield before you go.")
+                if not player.have_sword:
+                    print(
+                        "You should take that sword. Who knows when it could come in handy.")
+                if player.have_sword and player.have_shield:
+
+                    input("[PRESS ANY KEY] ")
+                    Scene.clear(self)
+
+                    return 'outside'
+            elif Scene.choicecheck(self, Scene.first_room,
+                                   "grab_options", "sword", choice):
+                if not player.have_sword:
+                    print(
+                        "You picked up the sword. \nYou don't know how to use it, but you're going to have to learn quick.")
+                    player.have_sword = True
+                elif player.have_sword:
+                    print("You already have the sword.")
+            elif Scene.choicecheck(self, Scene.first_room,
+                                   "grab_options", "shield", choice):
+                if not player.have_shield:
+                    print("You take the shield on your arm.\nIt feels quite sturdy.")
+                    player.have_shield = True
+                elif player.have_shield:
+                    print("You already have the shield.")
+            elif Scene.choicecheck(self, Scene.first_room, "grab_options", "bread", choice):
+                if not bread_taken:
+                    print(
+                        "You only see 3 pieces of bread that are even edible. You take them anyways.\nThese can be used to recover health.")
+                    bread_taken = True
+                    player.bread += 3
+                    print(
+                        f"You now have {player.bread} pieces of bread.\n   *To check food count, input [FOOD]\n   *To check health, input [health]")
+                elif bread_taken:
+                    print("You already took all the edible pieces that were left.")
+            elif Scene.choicecheck(self, Scene.first_room, "look_options", "room_options", choice):
+                print(
+                    "You look around the tent. A word is scrawled on the table.\n\n\t\t[PICKLE]\n\nYou're not sure what that means, but you think you should memorize it.")
+                if not bread_taken:
+                    print(
+                        "A few pieces of bread lie on the table. Some appear to be edible.")
+                if not player.have_shield:
+                    print("You notice a shield lying in the corner of the tent.")
+                if not player.have_sword:
+                    print(
+                        "A lone sword sits perched on the mantle. It could come in handy.")
+                if bread_taken and player.have_shield and player.have_sword:
+                    print("You see nothing else of value.")
+            else:
+                print("You can't do that right now!")
+
+            choice = input("> ")
 
 
-# class PrisonCorridor():
-#     exit()
+class PrisonCorridor(Scene):  # ADD NEW PATHS
 
-
-class Battle(Scene):
-    #   MAKE SCENE.ENEMY INTO AVRIABLE.
     def enter(self):
-        print("\n   *** BATTLE ***")
+        # print(
+        # f"PLAYER CORRIDOR SHOULD BE TRUE SENCOND {player.prison_corridor}")
+        if not player.prison_corridor:
+            player.prison_corridor = True
+            print("You make your way past the guard into the prison corridor.\nAs you enter, you see a woman in ragged clothes subduing another guard.\n\n\"Oh hey. I see you're trying to break out as well.\" she says.\n\"I'm looking for a key to the main entrance. It's the only way out.\"\n\"Want to help?\"")
 
+            choice = input("\n\t[YES] [NO]\n> ")
+            while True:
+                if Scene.scene_char_check(self, Scene.char_interactions_words,
+                                          "word", choice):
+                    player.char_interaction(choice)
+                elif "yes" in choice.lower():
+                    player.have_help = True
+                    print("A guard enters the corridor behind you and spots you.\nWith inhuman speed, the woman whips out a knife and hurls it at the guard, instantly killing them.\n\n\"Now look. To get through the main entrance, \nwe need a key that's in the prison's control room to your left.\nIt's locked away in a mechanism I'm not familiar with.\nGo there and try to unlock it. Meet me at the main entrance when you have it.\"\n\nShe then darts to the door on the right.\n")
+
+                    input("[PRESS ANY KEY] ")
+                    Scene.clear(self)
+
+                    return 'prison puzzle'
+                elif "no" in choice.lower():
+                    Scene.NEXT = 'prison corridor'
+
+                    print(
+                        "Another guard enters the corridor behind you and spots you.\n\n\"Well,\" she says. \"Looks like you got this covered then.\"\n\nShe runs off to the door to your right.\nDistaught at losing their comrade, the enemy attempts to engage in combat.\nDo you want to heal first?  [YES] [NO]")
+
+                    choice = input("> ").lower()
+
+                    while True:
+                        if 'yes' in choice:
+                            if player.bread > 0:
+                                player.bread -= 1
+                                player.health = player.max_health
+                                print(
+                                    f"You are now at max health.\n   *Bread remaining: [{player.bread}]")
+                                return 'battle'
+                            else:
+                                print("   *You don't have any bread left!")
+                                return 'battle'
+                        elif 'no' in choice:
+                            return 'battle'
+                        else:
+                            print("Choose [YES] or [NO].")
+
+                        choice = input("> ").lower()
+
+                else:
+                    print("Choose [YES] or [NO].")
+
+                choice = input("\t[YES] [NO]\n> ")
+        elif player.prison_corridor:
+            Scene.NEXT = 'prison puzzle'
+            print(
+                "Now alone with two dead bodies, you see two doors. \nOne to your left and one to your right.\n")
+
+            choice = input("> ").lower()
+
+            while True:
+                if 'right' in choice:
+                    print(
+                        "The door is locked.\nThe strange woman must have locked it behind her.")
+                elif 'left' in choice:
+
+                    input("[PRESS ANY KEY] ")
+                    Scene.clear(self)
+
+                    return 'prison puzzle'
+                else:
+                    print("Choose [LEFT] or [RIGHT]")
+                choice = input("> ")
+
+
+class PrisonPuzzle(Scene):
+
+    def enter(self):
+        print("You enter what looks to be the control room. In there you notice the key locked behind a glass door.\nIn front of it lies a keypad.")
+
+        passcode = "pickle"
+        choice = input("What do you type in?\n> ").lower()
+
+        errors = 0
+
+        while True:
+            Scene.clear(self)
+            if choice == passcode:
+                print("The glass door opens revealing the key.\nYou take it.\n")
+
+                input("[PRESS ANY KEY] ")
+                Scene.clear(self)
+
+                return 'main entrance'
+            else:
+                Scene.NEXT = 'main entrance'
+                if errors < 2:
+                    errors += 1
+                    print(f"\t\t\t*** ERROR [{errors} | 3] ***\n")
+                elif errors == 2:
+                    enemy.health = 15
+                    print(
+                        "Upon the last error, siren blares and a guard enters the control room.\nThis one seems a bit tougher. You should be careful.\nYou prepare for battle.Do you want to heal first?  [YES] [NO]")
+
+                    choice = input("> ").lower()
+
+                    while True:
+                        if 'yes' in choice:
+                            if player.bread > 0:
+                                player.bread -= 1
+                                player.health = player.max_health
+                                print(
+                                    f"You are now at max health.\n   *Bread remaining: [{player.bread}]")
+                                return 'battle'
+                            else:
+                                print("   *You don't have any bread left!")
+                                return 'battle'
+                        elif 'no' in choice:
+                            return 'battle'
+                        else:
+                            print("Choose [YES] or [NO].")
+
+                        choice = input("> ").lower()
+
+                    return 'battle'
+            choice = input("What do you type in?\n> ").lower()
+
+        exit(1)
+
+
+class MainEntrance(Scene):
+
+    def enter(self):
+        if player.have_help:
+            print("You somehow find your way to the main entrance.\nThe woman is standing by the exit door.\n\n\"Took you long enough.\" she says.\n\"Now unlock the door with the key.\"")
+
+            choice = input("> ")
+
+            while True:
+                if Scene.choicecheck(self, Scene.first_room, "use", "door_options", choice):
+                    return 'final scene'
+                else:
+                    print("\n\n\"Just unlock the door. It's not that hard.\"\n\n")
+                choice = input("> ")
+                Scene.clear(self)
+        elif not player.have_help:
+            print("You somehow find your way to the main entrance. As you approach the door, you notice the woman from before show up.\n\n\"HEY! Is that the key?\nLet's blow this joint!\"\n\n")
+
+            choice = input("> ")
+
+            while True:
+                if Scene.choicecheck(self, Scene.first_room, "use", "door_options", choice):
+                    return 'final scene'
+                else:
+                    print("\n\n\"Just unlock the door. It's not that hard.\"\n\n")
+                choice = input("> ")
+                Scene.clear(self)
+
+
+class Battle(Scene):  # DONE
+    def enter(self):
+        print(
+            "\n   *** BATTLE ***   * INPUT [1] TO ATTACK OR [2] DEFEND *\n")
+        # print(f"\n * {Scene.enemy_actions[randint(0, 3)]} *\n")
+        input("[PRESS ANY KEY TO START]")
+        Scene.clear(self)
         choice = ""
 
         while True:
-            print(f"\t[HP:{player.health}] [EnemyHP:{Scene.ENEMY.health}")
+            # Scene.clear(self)
+
+            if player.health == 0:
+                print("The enemy has slain you..\n\n   *** YOU DIED. ***\n\n")
+                return 'death'
+            if enemy.health == 0:
+                print("\t*VICTORY*\n*You defeated the enemy!*\n")
+                enemy.health = enemy.max_health
+                return str(Scene.NEXT)
+
             print(f"\n * {Scene.enemy_actions[randint(0, 3)]} *\n")
+            print(f"\t[HP:{player.health}] [EnemyHP:{enemy.health}]\n")
             choice = input("\t[ATTACK] [DEFEND]\n> ").lower()
-            if choice == "attack":
-                roll = randint(1, 10)
-                if roll > 5:
-                    print(
-                        f"\n * {Scene.player_hit[randint(0, len(Scene.player_hit) - 1)]} *")
-                elif roll <= 5:
-                    print(
-                        f"\n * {Scene.player_miss[randint(0, len(Scene.player_miss) - 1)]} *")
+
+            if enemy.health != 0 and player.health != 0:
+                if choice == "1":
+                    roll = randint(1, 10)
+                    # roll = 2
+                    if roll > 5:
+                        print(
+                            f"\n * {Scene.player_hit[randint(0, len(Scene.player_hit) - 1)]} *")
+                        player.attack(enemy)
+                    elif roll <= 5:
+                        roll = randint(1, 10)
+                        # roll = 7
+                        print(
+                            f"\n * {Scene.player_miss[randint(0, len(Scene.player_miss) - 1)]} *")
+                        if roll > 3:
+                            print(
+                                f"\n * {Scene.enemy_hit[randint(0, len(Scene.enemy_hit) - 1)]} *")
+                            enemy.attack(player)
+                        elif roll <= 3:
+                            print(
+                                f"\n * {Scene.enemy_miss[randint(0, len(Scene.enemy_miss) - 1)]} *")
+                elif choice == "2":
+                    roll = randint(1, 10)
+                    # roll = 2
+                    if roll < 3:
+                        print(
+                            f"\n * {Scene.enemy_hit[randint(0, len(Scene.enemy_hit) - 1)]} *")
+                        enemy.attack(player)
+                    elif roll >= 3:
+                        roll = randint(1, 10)
+                        # roll = 7
+                        print(
+                            f"\n * {Scene.enemy_miss[randint(0, len(Scene.enemy_miss) - 1)]} *")
+                        if roll > 5:
+                            print(
+                                f"\n * {Scene.player_parry[randint(0, len(Scene.player_parry) - 1)]} *")
+                            player.attack(enemy, 1)
+
+                else:
+                    print("   * Input [1] to attack or [2] to defend *\n")
+            print(f"\t[HP:{player.health}] [EnemyHP:{enemy.health}]\n")
+            input("\t[PRESS ANY KEY] ")
+            Scene.clear(self)
 
 
 class FinalScene(Scene):
 
     def enter(self):
-        print("the end")
+        print("\n\t** You made it out alive! **\n\t\t* You win! *\n")
         exit()
+
+
+class Death(Scene):
+
+    def enter(self):
+        print("*** That was a good try. Do better next time. ***\n")
+        exit(1)
 
 
 class Map(object):
@@ -286,7 +624,10 @@ class Map(object):
         'outside': Outside(),
         'tent first': TentFirst(),
         'battle': Battle(),
-        # 'prison corridor': PrisonCorridor(),
+        'death': Death(),
+        'prison corridor': PrisonCorridor(),
+        'prison puzzle': PrisonPuzzle(),
+        'main entrance': MainEntrance(),
         'final scene': FinalScene()
     }
 
@@ -302,7 +643,7 @@ class Map(object):
 
 
 player = Character()
-enemy1 = Mob()
-a_map = Map('battle')
+enemy = Mob()
+a_map = Map('title screen')
 a_game = Engine(a_map)
 a_game.play()
