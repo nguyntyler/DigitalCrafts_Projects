@@ -74,16 +74,16 @@ class Scene(object):
         "The enemy slashes at you with his sword.",
         "The enemy lunges his sword towards you.",
         "In a sweeping motion, the enemy swings his sword at your head.",
-        "The enemy plunges his sword at you."
+        "The enemy plunges his sword at you.",
+        "The enemy thrusts his sword."
     ]
     enemy_miss = [
-        "You deflected the attack!",
-        "The attack misses!",
-        "You dodged the attack!",
-        "You parry the enemy!",
-        "The attack barely grazes you!",
-        "Using your shield, you manage to block in time!",
-        "You block the attack with your shield!"
+        "You deflected the enemy's attack!",
+        "The enemy's attack misses!",
+        "You dodged the enemy's attack!",
+        "The enemy's attack barely grazes you!",
+        "Using your shield, you manage to block the enemy in time!",
+        "You block the enemy's attack with your shield!"
     ]
     enemy_hit = [
         "The enemy lands an attack, striking your side.",
@@ -95,10 +95,14 @@ class Scene(object):
     player_hit = [
         "You land an attack on the enemy!",
         "Your attack connects!",
+        "You struck the enemy!",
+        "Your attack hits the enemy!"
     ]
     player_miss = [
         "Your attack misses...",
-        "You miss..."
+        "You stumble and miss your attack...",
+        "You hit nothing...",
+        "Your sword just cuts air...",
     ]
     player_parry = [
         "<PARRY> With a swift swing, you manage to strike back the enemy!",
@@ -327,10 +331,11 @@ class TentFirst(Scene):  # DONE
             elif Scene.choicecheck(self, Scene.first_room,
                                    "leave", "leave", choice):
                 if not player.have_shield:
-                    print("Maybe you should pick up that shield before you go.")
+                    print(
+                        "A shield sits in the corner of the tent.\nYou should take that before you go.")
                 if not player.have_sword:
                     print(
-                        "You should take that sword. Who knows when it could come in handy.")
+                        "A sword sits by the table.\nYou should take it. Who knows when it could come in handy.")
                 if player.have_sword and player.have_shield:
 
                     input("[PRESS ANY KEY] ")
