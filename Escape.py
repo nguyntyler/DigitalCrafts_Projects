@@ -783,6 +783,6 @@ class Map(object):
 
 player = Character()
 enemy = Mob()
-a_map = Map('prison puzzle')
+a_map = Map('title screen')
 a_game = Engine(a_map)
 a_game.play()
