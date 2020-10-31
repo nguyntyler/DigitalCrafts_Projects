@@ -1,0 +1,80 @@
+body {
+    background: sienna;
+    color: white;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: black;
+    padding: 20px;
+    height: 100px;
+}
+
+header a {
+    color: white;
+    text-decoration: none;
+    text-transform: uppercase;
+    margin-top: 40px;
+}
+
+header .logo a {
+    background-image: url(https://i.pinimg.com/originals/e8/07/57/e807579edb93300913645941f251c97d.jpg);
+    display: inline-block;
+    text-indent: -99999px; /*Moves the artisan text far off so we cant see it. */
+    width: 300px;
+    height: 80px;
+}
+
+section {
+    background: white;
+    color: grey;
+    padding: 20px;
+    display: flex;
+}
+
+.feature-box div {
+    width: 100%;
+    margin: 2px;
+}
+
+.feature-box {
+    display: flex;
+}
+
+.feature-box.sales div {
+    background: coral;
+    
+}
+
+.feature-box.closeouts div {
+    background: red;
+}
+
+/* section div { /*Having a space between the selectors says to look inside whats to the left. So find a div inside SECTION. COMMA APPLIES TO MULTIPLE SELECTORS */
+    /*background: red;
+    border: 1px solid black;
+    margin: 1px;
+    /* DISPLAY INLINE CHANGES THE BOX TO FIT ITS CONTENT WIDTH CANNOT BE SET.
+    INLINE-BLOCK ALLOWS THE CONTAINER TO HAVE CHANGING SIZE. FLEXBOX DOES AN INLINE-BLOCK STYLE*/
+    /*margin: auto; /*THIS IS SIMILAR TO JUSTIFY-CONTENT SPACE-AROUND*/
+    /*width: 100%;
+} */
+
+ul {
+    margin:0; /*UL AUTO HAS MARGIN AND PADDING*/
+    padding: 0;
+    list-style-type: none;
+}
+
+li {
+    display: inline-block; /* ALLOWS THE BOX SIZING TO CHANGE AND ADDS SPACING BETWEEN WITH THE MARGINS. */
+    margin-right: 20px;
+}
+
+footer {
+    background: black;
+    padding: 10px, 20px;
+}
+
+

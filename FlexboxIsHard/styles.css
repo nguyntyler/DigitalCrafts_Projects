@@ -78,6 +78,10 @@
     margin-bottom: 20px;
 }
 
+.logo {
+    /* border: 1px solid black; */
+}
+
 .footer {
     display: flex;
     justify-content: space-between;

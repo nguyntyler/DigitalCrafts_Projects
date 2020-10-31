@@ -233,7 +233,7 @@ ul.about-content {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 30px 40px 0;
+    padding: 0 0 40px 0;
 }
 .books {
     background-color: rgba(0, 0, 0, 0.694);
@@ -268,3 +268,7 @@ ul.about-content {
     }
 }
 
+.custom-button {
+    padding-top: 15px;
+    color: aliceblue;
+}
