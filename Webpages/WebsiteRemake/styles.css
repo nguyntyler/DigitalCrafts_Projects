@@ -63,9 +63,9 @@ header nav li:last-child {
     header, h2 {
         margin-bottom: 15px;
     }
-    header, nav, li {
-        margin: 0 7px;
-    }
+    /* header, nav, li { */
+        /* margin: 0 7px; */
+    /* } */
 }
 
 /* Banner */
